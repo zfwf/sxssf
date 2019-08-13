@@ -66,8 +66,6 @@ public class App {
           .println(String.format("getStringFromFile: unable to read file \"{}\" : {}", fileLocationInClasspath, e));
     }
 
-    System.out.println("content: " + content);
-
     List<LinkedHashMap<String, Object>> meta = null;
     try {
       ObjectMapper objectMapper = new ObjectMapper();
@@ -87,24 +85,18 @@ public class App {
 
     // // keep 100 rows in memory, exceeding rows will be flushed to disk
     // write header col
-    SXSSFWorkbook sxssfWorkbook = new SXSSFWorkbook(xssfWorkbook, 10);
-    Sheet sheet = sxssfWorkbook.createSheet();
+    SXSSFWorkbook wb = new SXSSFWorkbook(xssfWorkbook, 10);
+    Sheet sheet = wb.createSheet();
 
     // var rowNum = sheet.getLastRowNum();
-    var headerRows = new ArrayList<Row>();
+    var headerRows = new HashMap<Integer, Row>();
     var effectiveCols = new ArrayList<HashMap<String, Object>>();
-    var sectionColIndex = 0;
     for (var i = 0; i < meta.size(); i++) {
       var m = meta.get(i);
-      var lvlNumCols = new ArrayList<HashMap<String, Object>>();
       m.put("rowIndex", 0);
-      if (i > 0) {
-        m.put("colIndex", effectiveCols.size() - 1);
-      } else {
-        m.put("colIndex", 0);
-      }
+      m.put("colIndex", effectiveCols.size());
 
-      getNextLevel(m, effectiveCols, sxssfWorkbook, headerRows, sheet);
+      getNextLevel(m, effectiveCols, wb, headerRows, sheet);
 
       // for (var i = 0; true; i++) {
       // var levelColIndex = sectionColIndex;
@@ -123,9 +115,9 @@ public class App {
       // }
       // }
     }
-    Row row = sheet.createRow(1);
-    Cell cell = row.createCell(1);
-    cell.setCellValue("This is a test of merging");
+    // Row row = sheet.createRow(1);
+    // Cell cell = row.createCell(1);
+    // cell.setCellValue("This is a test of merging");
 
     // sheet.addMergedRegion(new CellRangeAddress(1, // first row (0-based)
     // 1, // last row (0-based)
@@ -133,26 +125,53 @@ public class App {
     // 2 // last column (0-based)
     // ));
 
-    // // int maxRows = 10; // max 1048576
-    // // int maxCol = 5; // max 16384
+    int maxRows = 1048576; // max 1048576
+    int maxCol = effectiveCols.size(); // max 16384
 
-    // // for (int rownum = 0; rownum < maxRows; rownum++) {
-    // // Row row = sheet.createRow(rownum);
-    // // for (int cellnum = 0; cellnum < maxCol; cellnum++) {
-    // // Cell cell = row.createCell(cellnum);
-    // // cell.setCellValue(new Date());
-    // // // cell.setCellValue(123456.123456789);
-    // // cell.setCellStyle(style);
-    // // }
+    for (int rownum = sheet.getLastRowNum() + 1; rownum < maxRows; rownum++) {
+      Row row = sheet.createRow(rownum);
+      for (int cellNum = 0; cellNum < maxCol; cellNum++) {
+        var cellProperties = effectiveCols.get(cellNum);
+        var cell = row.createCell(cellNum);
 
-    // // }
+        // mock data
+        if (cellProperties.containsKey("dataSubType")) {
+          var dataSubType = (String) cellProperties.get("dataSubType");
+          switch (dataSubType) {
+          case "DATE_TIME":
+            cell.setCellValue(new Date());
+            break;
+          case "INTEGER":
+            cell.setCellValue(123456.123456789);
+            break;
+          default:
+            cell.setCellValue("DEFAULT");
+          }
+        }
 
-    // try (FileOutputStream fos = new FileOutputStream("sxssf.xlsx")) {
-    // sxssfWorkbook.write(fos);
-    // // xssfWorkbook.write(fos);
-    // } catch (IOException e) {
-    // System.out.println(e);
-    // }
+        // create cell styles
+        DataFormat dataFormat = wb.createDataFormat();
+        CellStyle cellStyle = null;
+        if (!cellProperties.containsKey("dataCellStyle")) {
+          cellStyle = wb.createCellStyle();
+          if (cellProperties.containsKey("numFmt")) {
+            cellStyle.setDataFormat(dataFormat.getFormat((String) cellProperties.get("numFmt")));
+          }
+          cellProperties.put("dataCellStyle", cellStyle);
+        } else {
+          cellStyle = (CellStyle) cellProperties.get("dataCellStyle");
+        }
+
+        cell.setCellStyle(cellStyle);
+      }
+    }
+
+    try (FileOutputStream fos = new FileOutputStream("sxssf.xlsx")) {
+      wb.write(fos);
+      // xssfWorkbook.write(fos);
+    } catch (IOException e) {
+      System.out.println(e);
+    }
 
     // get elapsed time, expressed in milliseconds
     long timeElapsed = stopWatch.elapsed(TimeUnit.MILLISECONDS);
@@ -161,56 +180,56 @@ public class App {
   }
 
   private static void getNextLevel(LinkedHashMap<String, Object> lvl, ArrayList<HashMap<String, Object>> effectiveCols,
-      SXSSFWorkbook wb, ArrayList<Row> headerRows, Sheet sheet) {
+      SXSSFWorkbook wb, Map<Integer, Row> headerRows, Sheet sheet) {
     if (lvl.containsKey("subColumns")) {
-      int numSubCols = 0;
-      for (var subLvl : ((List<LinkedHashMap<String, Object>>) lvl.get("subColumns"))) {
+      int subNumSubCols = 0;
+      var subColumns = ((List<LinkedHashMap<String, Object>>) lvl.get("subColumns"));
+      for (var i = 0; i < subColumns.size(); i++) {
+        var subLvl = subColumns.get(i);
         subLvl.put("rowIndex", ((int) lvl.get("rowIndex") + 1));
+        subLvl.put("colIndex", effectiveCols.size());
+
         getNextLevel(subLvl, effectiveCols, wb, headerRows, sheet);
+
         if (subLvl.containsKey("numSubCols"))
-          numSubCols += ((int) subLvl.get("numSubCols"));
+          subNumSubCols += ((int) subLvl.get("numSubCols"));
         else
-          numSubCols++;
+          subNumSubCols++;
       }
 
-      lvl.put("numSubCols", numSubCols);
-      var firstColInLevel = ((List<LinkedHashMap<String, Object>>) lvl.get("subColumns")).get(0);
-      lvl.put("colIndex", (int) firstColInLevel.get("colIndex"));
+      lvl.put("numSubCols", subNumSubCols);
       var colIndex = (int) lvl.get("colIndex");
       var rowIndex = (int) lvl.get("rowIndex");
       Row row = null;
-      if (headerRows.size() == 0 || rowIndex == headerRows.size()) {
+      if (!headerRows.containsKey(rowIndex)) {
         row = sheet.createRow(rowIndex);
-        headerRows.add(row);
+        headerRows.put(rowIndex, row);
       } else {
         row = headerRows.get(rowIndex);
       }
       var cell = row.createCell(colIndex);
       cell.setCellValue((String) lvl.get("name"));
-      if (numSubCols > 0) {
+      if (subNumSubCols > 0) {
         sheet.addMergedRegion(new CellRangeAddress(rowIndex, // first row (0-based)
             rowIndex, // last row (0-based)
             colIndex, // first column (0-based)
-            colIndex + (numSubCols - 1) // last column (0-based)
+            colIndex + (subNumSubCols - 1) // last column (0-based)
         ));
-
       }
     } else {
-      // var colProperties = new HashMap<String, Object>();
-      var colProperties = lvl;
-      effectiveCols.add(colProperties);
-      lvl.put("colIndex", effectiveCols.size() - 1);
-      // create cell styles
-      CellStyle cellStyle = wb.createCellStyle();
-      DataFormat dataFormat = wb.createDataFormat();
-      if (lvl.containsKey("numFmt")) {
-        cellStyle.setDataFormat(dataFormat.getFormat((String) lvl.get("numFmt")));
-        colProperties.put("style", cellStyle);
+      var colIndex = (int) lvl.get("colIndex");
+      var rowIndex = (int) lvl.get("rowIndex");
+      Row row = null;
+      if (!headerRows.containsKey(rowIndex)) {
+        row = sheet.createRow(rowIndex);
+        headerRows.put(rowIndex, row);
+      } else {
+        row = headerRows.get(rowIndex);
       }
+      var cell = row.createCell(colIndex);
+      cell.setCellValue((String) lvl.get("name"));
 
-      // if (lvl.containsKey("dataSubType")) {
-
-      // }
+      effectiveCols.add(lvl);
     }
   }
 
