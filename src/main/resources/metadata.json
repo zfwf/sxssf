@@ -1,0 +1,288 @@
+[
+  {
+    "name": "Dimensions",
+    "subColumns": [
+      {
+        "width": 30,
+        "name": "Campaign Name",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Campaign Id",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Campaign Start",
+        "dataSubType": "DATE_TIME",
+        "numFmt": "m/d/yy h:mm AM/PM"
+      },
+      {
+        "width": 30,
+        "name": "Campaign End",
+        "dataSubType": "DATE_TIME",
+        "numFmt": "m/d/yy h:mm AM/PM"
+      },
+      {
+        "width": 30,
+        "name": "Segment Name",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Sub Segment Name",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Segment ID",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Sub Segment ID",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Player ID",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Player First Name",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Player Last Name",
+        "dataSubType": "STRING"
+      },
+      {
+        "width": 30,
+        "name": "Invited Player Count",
+        "dataSubType": "INTEGER",
+        "numFmt": "0"
+      }
+    ]
+  },
+  {
+    "name": "Response",
+    "subColumns": [
+      {
+        "width": 30,
+        "name": "Responder Count",
+        "dataSubType": "INTEGER",
+        "numFmt": "0"
+      },
+      {
+        "width": 30,
+        "name": "Redeemer Count (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "0"
+      },
+      {
+        "width": 30,
+        "name": "Redeemer Count (Total)",
+        "dataSubType": "INTEGER",
+        "numFmt": "0"
+      },
+      {
+        "width": 20,
+        "name": "Response Rate",
+        "dataSubType": "INTEGER",
+        "numFmt": "0%"
+      },
+      {
+        "width": 20,
+        "name": "Redemption Rate (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "0%"
+      },
+      {
+        "width": 20,
+        "name": "Trips",
+        "dataSubType": "INTEGER",
+        "numFmt": "0"
+      },
+      {
+        "width": 20,
+        "name": "Redemption Trips (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "0"
+      },
+      {
+        "width": 20,
+        "name": "Avg Trips Per Responder",
+        "dataSubType": "INTEGER",
+        "numFmt": "0"
+      },
+      {
+        "width": 20,
+        "name": "Avg Redemption Trips Per Redeemers",
+        "dataSubType": "INTEGER",
+        "numFmt": "0"
+      }
+    ]
+  },
+  {
+    "name": "Revenue",
+    "subColumns": [
+      {
+        "width": 20,
+        "name": "Coin In (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Casino Win (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Theo Win (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Coin In (Total)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Casino Win (Total)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Theo Win (Total)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      }
+    ]
+  },
+  {
+    "name": "Expenses",
+    "subColumns": [
+      {
+        "width": 20,
+        "name": "Free Play Redeemed (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Free Play Redeemed (Total)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Customer Expenses",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Points Liability (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Points Liability (Total)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      }
+    ]
+  },
+  {
+    "name": "Profit / Profit Margin",
+    "subColumns": [
+      {
+        "width": 20,
+        "name": "Casino Win (Delayered) Profit",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 30,
+        "name": "Casino Win (Delayered) Profit Margin",
+        "dataSubType": "INTEGER",
+        "numFmt": "0%"
+      },
+      {
+        "width": 20,
+        "name": "Casino Win (Total) Profit",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 30,
+        "name": "Casino Win (Total) Profit Margin",
+        "dataSubType": "INTEGER",
+        "numFmt": "0%"
+      },
+      {
+        "width": 20,
+        "name": "Theo Win (Delayered) Profit",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 30,
+        "name": "Theo Win (Delayered) Profit Margin",
+        "dataSubType": "INTEGER",
+        "numFmt": "0%"
+      },
+      {
+        "width": 20,
+        "name": "Theo Win (Total) Profit",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 30,
+        "name": "Theo Win (Total) Profit Margin",
+        "dataSubType": "INTEGER",
+        "numFmt": "0%"
+      },
+      {
+        "width": 30,
+        "name": "Casino Win (Delayered)/FP",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 30,
+        "name": "Theo Win (Delayered)/FP",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 30,
+        "name": "Profit per FP (CasinoWin (Delayered))",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 30,
+        "name": "Profit per FP (TheoWin (Delayered))",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      },
+      {
+        "width": 20,
+        "name": "Expense Sum (Delayered)",
+        "dataSubType": "INTEGER",
+        "numFmt": "$#,##0.00"
+      }
+    ]
+  }
+]
