@@ -71,7 +71,7 @@ public class App {
     List<LinkedHashMap<String, Object>> meta = null;
     try {
       ObjectMapper objectMapper = new ObjectMapper();
-      meta = objectMapper.readValue(content, new TypeReference<List<?>>() {
+      meta = objectMapper.readValue(content, new TypeReference<List<LinkedHashMap<String, Object>>>() {
       });
     } catch (Exception e) {
       System.out.println(String.format("Unable to convert file to map %s", e));
@@ -91,10 +91,37 @@ public class App {
     Sheet sheet = sxssfWorkbook.createSheet();
 
     // var rowNum = sheet.getLastRowNum();
+    var headerRows = new ArrayList<Row>();
     var effectiveCols = new ArrayList<HashMap<String, Object>>();
-    for (var m : meta) {
+    var sectionColIndex = 0;
+    for (var i = 0; i < meta.size(); i++) {
+      var m = meta.get(i);
       var lvlNumCols = new ArrayList<HashMap<String, Object>>();
-      getNextLevel(m, lvlNumCols, effectiveCols, sxssfWorkbook);
+      m.put("rowIndex", 0);
+      if (i > 0) {
+        m.put("colIndex", effectiveCols.size() - 1);
+      } else {
+        m.put("colIndex", 0);
+      }
+
+      getNextLevel(m, effectiveCols, sxssfWorkbook, headerRows, sheet);
+
+      // for (var i = 0; true; i++) {
+      // var levelColIndex = sectionColIndex;
+      // var level = lvlNumCols.get(i);
+      // if (level.containsKey("numSubCols")) {
+      // // create a cell
+      // if (headerRows.get(i) != null) {
+      // var row = headerRows.get(i);
+      // if (row == null) {
+      // row = sheet.createRow(i);
+      // headerRows.add(row);
+      // }
+      // var cell = row.createCell(levelColIndex);
+      // cell.setCellValue(value);
+      // }
+      // }
+      // }
     }
     Row row = sheet.createRow(1);
     Cell cell = row.createCell(1);
@@ -133,30 +160,51 @@ public class App {
     System.out.println("Execution time in milliseconds: " + timeElapsed);
   }
 
-  private static void getNextLevel(LinkedHashMap<String, Object> lvl, ArrayList<HashMap<String, Object>> lvlNumCols,
-      ArrayList<HashMap<String, Object>> effectiveCols, SXSSFWorkbook wb) {
+  private static void getNextLevel(LinkedHashMap<String, Object> lvl, ArrayList<HashMap<String, Object>> effectiveCols,
+      SXSSFWorkbook wb, ArrayList<Row> headerRows, Sheet sheet) {
     if (lvl.containsKey("subColumns")) {
-      getNextLevel(lvl, lvlNumCols, effectiveCols, wb);
       int numSubCols = 0;
-      for (var entry : ((LinkedHashMap<String, ?>) lvl.get("subColumns")).entrySet()) {
-        var col = (LinkedHashMap<String, ?>) entry.getValue();
-        if (col.containsKey("numSubCols"))
-          numSubCols += ((int) col.get("numSubCols"));
+      for (var subLvl : ((List<LinkedHashMap<String, Object>>) lvl.get("subColumns"))) {
+        subLvl.put("rowIndex", ((int) lvl.get("rowIndex") + 1));
+        getNextLevel(subLvl, effectiveCols, wb, headerRows, sheet);
+        if (subLvl.containsKey("numSubCols"))
+          numSubCols += ((int) subLvl.get("numSubCols"));
         else
           numSubCols++;
       }
 
-      lvlNumCols.add(new HashMap<String, Object>(Map.of("name", lvl.get("name"), "numSubCols", numSubCols)));
+      lvl.put("numSubCols", numSubCols);
+      var firstColInLevel = ((List<LinkedHashMap<String, Object>>) lvl.get("subColumns")).get(0);
+      lvl.put("colIndex", (int) firstColInLevel.get("colIndex"));
+      var colIndex = (int) lvl.get("colIndex");
+      var rowIndex = (int) lvl.get("rowIndex");
+      Row row = null;
+      if (headerRows.size() == 0 || rowIndex == headerRows.size()) {
+        row = sheet.createRow(rowIndex);
+        headerRows.add(row);
+      } else {
+        row = headerRows.get(rowIndex);
+      }
+      var cell = row.createCell(colIndex);
+      cell.setCellValue((String) lvl.get("name"));
+      if (numSubCols > 0) {
+        sheet.addMergedRegion(new CellRangeAddress(rowIndex, // first row (0-based)
+            rowIndex, // last row (0-based)
+            colIndex, // first column (0-based)
+            colIndex + (numSubCols - 1) // last column (0-based)
+        ));
+
+      }
     } else {
       // var colProperties = new HashMap<String, Object>();
       var colProperties = lvl;
       effectiveCols.add(colProperties);
-
+      lvl.put("colIndex", effectiveCols.size() - 1);
       // create cell styles
       CellStyle cellStyle = wb.createCellStyle();
       DataFormat dataFormat = wb.createDataFormat();
-      if (lvl.containsKey("numfmt")) {
-        cellStyle.setDataFormat(dataFormat.getFormat((String) lvl.get("numfmt")));
+      if (lvl.containsKey("numFmt")) {
+        cellStyle.setDataFormat(dataFormat.getFormat((String) lvl.get("numFmt")));
         colProperties.put("style", cellStyle);
       }
 
@@ -164,5 +212,12 @@ public class App {
 
       // }
     }
+  }
+
+  private static int getColOffsetFromNumSubCols(int numSubCols) {
+    if (numSubCols == 0 || numSubCols == 1)
+      return 1;
+
+    return numSubCols - 1;
   }
 }
