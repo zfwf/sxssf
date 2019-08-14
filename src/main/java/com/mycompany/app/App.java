@@ -125,7 +125,7 @@ public class App {
     // 2 // last column (0-based)
     // ));
 
-    int maxRows = 1048576; // max 1048576
+    int maxRows = 100; // max 1048576
     int maxCol = effectiveCols.size(); // max 16384
 
     for (int rownum = sheet.getLastRowNum() + 1; rownum < maxRows; rownum++) {
@@ -171,6 +171,8 @@ public class App {
       // xssfWorkbook.write(fos);
     } catch (IOException e) {
       System.out.println(e);
+    } finally {
+      wb.dispose();
     }
 
     // get elapsed time, expressed in milliseconds
@@ -223,11 +225,16 @@ public class App {
       if (!headerRows.containsKey(rowIndex)) {
         row = sheet.createRow(rowIndex);
         headerRows.put(rowIndex, row);
+        // set column width
       } else {
         row = headerRows.get(rowIndex);
       }
       var cell = row.createCell(colIndex);
       cell.setCellValue((String) lvl.get("name"));
+      if (lvl.containsKey("width")) {
+        var width = (int) lvl.get("width");
+        sheet.setColumnWidth(colIndex, width);
+      }
 
       effectiveCols.add(lvl);
     }
